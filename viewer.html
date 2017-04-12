@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html style="height: calc(100% - 55px)">
+<head>
+	<meta charset="utf-8"/>
+	<style type="text/css">
+		html,body,div,textarea { height: 100% }
+	</style>
+</head>
+<body onload="list()">
+	<div style="height: 30px">
+			<select id="menu">
+				<option>Select an article</option>
+			</select>
+	</div>
+	<div>
+		<div style="width: 50%; float: left">
+			<textarea id="input" style="width: 98%"></textarea>
+		</div>
+		<div id="preview" style="overflow: auto"></div>
+	</div>
+	<script src="asciidoc.js"></script>
+	<script>
+		xhr = new XMLHttpRequest();
+		function get(url, parser) {
+			xhr.open("GET", url, false);
+			xhr.onload = function() {
+				parser(this.responseText);
+			};
+			xhr.send(null);
+		}
+
+		function list() {
+			get("menu.json", function(text) {
+				docs = JSON.parse(text);
+				for (i in docs) {
+					a = document.createElement("option");
+					a.innerText = docs[i];
+					a.setAttribute("onclick", "load('" + i + "')");
+					document.getElementById("menu").appendChild(a);
+				}
+			});
+		}
+
+		function load(url) {
+			get(url, function(text) {
+				input.value = text;
+				show();
+			});
+		}
+
+		function show() {
+			preview.innerHTML = parse(input.value);
+		}
+
+		input.onkeyup = show;
+	</script>
+</body>
+</html>

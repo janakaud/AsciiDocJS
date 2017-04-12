@@ -1,0 +1,41 @@
+= Ayubowan!
+==== (The greeting "_May you live long!_" in https://en.m.wikipedia.org/wiki/Sinhalese&#95;language[_Sinhala_])
+
+== Some lorem ipsum stuff
+
+A paragraph having *bold* and _italic_ text.
+Unless you leave a blank line, everything falls into the same paragraph.
+
+Start a new paragraph with a leading blank line.
++
+You can use `+` to keep the paragraph sources separate, and yet merge them in the rendered output.
+
+Both link styles work, including <<http://www.example.com,this>> and http://www.example.com[this], always with the "open in new tab" (`target="&#95;blank"`) option.
+
+image::not_found.png[You can include images with alt text.]
+
+* Multi-level lists also work fine, although you have to be careful of spacing and the symbols used.
+This is a top-level item.
+** deep
+*** deeper!
+* top level
+- deep, since we didn't leave a blank line after "top level" to indicate the start of a new list
+--- deeper
+-- deeper, although we included 2 dashes (since "--" is a new bullet symbol, and
+the tool does not care about the number of characters)
+---- this is the _deepest_, but we can go further using more unique bullet tokens!
+* top level again
+
+== Known issues
+
+[NOTE]
+Notes are not working yet (among a *lot* of other AsciiDoc features).
+
+When you have two underscores on the same line, the parser gets messed up :( even in totally unexpected places like image::name_has_underscore.png[image URLs].
+
+Another case (paragraph) where two_underscores mess things up pretty_bad.
+
+A possible workaround is encoding the&#95;underscore (or whatever the nasty&#95;character), even in an image::http://www.example.com/another&#95;not&#95;found.png[image URL].
+
+*That's* _all_, `folks`! (at least for now).
+

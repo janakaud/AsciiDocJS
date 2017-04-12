@@ -1,0 +1,11 @@
+AsciiDocJS is a minimal, JS-driven, client-side AsciiDoc renderer. It is just 3.7 KB in size, and can be trimmed down to 2.3 KB via minification. It is written in pure JS, not utilizing any external libraries like JQuery, so that you can simply start using it via a single import:
+
+`&lt;script src="https://raw.githubusercontent.com/janakaud/AsciiDocJS/master/asciidoc.js"&gt;&lt;/script&gt;`
+
+AsciiDocJS provides a single method, `parse()`, that accepts a `string` of AsciiDoc content and outputs a `string` of corresponding HTML. It relies heavily on proper formatting of the AsciiDoc source, as explained and demonstrated to some extent in the <<sample&#46;ad,sample document>>. It parses the AsciiDoc source in a partially streaming manner, processing each line independent of the others, to simplify the code and (hopefully) reduce the state management overhead.
+
+AsciiDocJS covers only a subset of the AsciiDoc spec. I myself am a beginner to AsciiDoc, focusing mainly on utilizing it for documentation and blogging, so this library is limited to that scope. There is no support for `[NOTE]`s, tables, embedding other AsciiDoc sources etc. There are some edge-case bugs as well, such as when 2 `*` or `_` characters are included in the same line in the source, which can either be worked around with some tricks demonstrated in the sample document or by directly fixing the JS source.
+
+This repo contains the AsciiDocJS source (`asciidoc.js`), and a sample AsciiDoc viewer (`viewer.html`) developed using it. It can be directly cloned and served via a static HTML web server, e.g. `python -m SimpleHTTPServer`. It retrieves and shows a list of AsciiDoc articles defined in `menu.json`, loading the article source on the left pane and the HTML preview on the right when one is selected.
+
+Contributions are always welcome :)
