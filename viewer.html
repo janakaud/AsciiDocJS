@@ -2,6 +2,7 @@
 <html style="height: calc(100% - 55px)">
 <head>
 	<meta charset="utf-8"/>
+	<title>AsciiDoc</title>
 	<style type="text/css">
 		html,body,div,textarea { height: 100% }
 	</style>
@@ -52,7 +53,7 @@
 			preview.innerHTML = parse(input.value);
 		}
 
-		input.onkeyup = show;
+		input.onblur = show;
 	</script>
 </body>
 </html>

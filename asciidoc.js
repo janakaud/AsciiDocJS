@@ -20,14 +20,17 @@ lists = {
 paired = {
 	"*": "b",
 	"_": "i",
-	"`": "tt"
+	"`": "code"
 };
 special = {
 	image: function(value) {
-		return value.replace(/image::([^\[]+)\[([^\]]*)\]/g, wrap("", "img", "src=\"$1\" alt=\"$2\""));
+		return value.replace(/image::([^\[]+)\[([^,\]]*)(,([^\]]*))?\]/g, wrap(wrap("", "img", "src=\"$1\" alt=\"$2\"$4"), "p", "style=\"text-align: center\""));
 	},
 	arrow: function(value) {
 		return value.replace(/->/g, "&rarr;");
+	},
+	mdash: function(value) {
+		return value.replace(/--/g, "&mdash;");
 	},
 	urlType1: function(value) {
 		return value.replace(/<<([^,]+),([^>]+)>>/g, function(whole, url, text) {
@@ -35,7 +38,7 @@ special = {
 		});
 	},
 	urlType2: function(value) {
-		return value.replace(/(https?:\/\/[^\s]+)\[([^\]]+)\]/g, wrap("$2", "a", "target=\"_blank\" href=\"$1\""));
+		return value.replace(/((https?:\/\/|mailto:)[^\s]+)\[([^\]]+)\]/g, wrap("$3", "a", "target=\"_blank\" href=\"$1\""));
 	}
 };
 skip = ["+"];
@@ -72,34 +75,37 @@ outer:
 			}
 		}
 
-		if (!done) {
-			for (token in fullline) {
-				if (html[i].startsWith(token)) {
-					html[i] = openTag(fullline[token], token) + html[i].substring(token.length);
+		// don't ruin multiline blocks
+		if (!multiline[stack.peek()]) {
+			if (!done) {
+				for (token in fullline) {
+					if (html[i].startsWith(token)) {
+						html[i] = openTag(fullline[token], token) + html[i].substring(token.length);
+						done = true;
+						break;
+					}
+				}
+			}
+
+			for (key in lists) {
+				token = (html[i].match(lists[key][0]) || [])[0];
+				if (token) {
+					html[i] = reachStack(token) + openTag("li", "li" + token) + html[i].substring(token.length);
 					done = true;
 					break;
 				}
 			}
-		}
 
-		for (key in lists) {
-			token = (html[i].match(lists[key][0]) || [])[0];
-			if (token) {
-				html[i] = reachStack(token) + openTag("li", "li" + token) + html[i].substring(token.length);
-				done = true;
-				break;
+			for (key in paired) {
+				escaped = regEscape(key);
+				html[i] = html[i].replace(new RegExp(escaped + "[^" + escaped + "\`]+" + escaped, "g"), function(value, pos, line) {
+					return noEscape(value, pos, line) ? value : wrap(value.substring(key.length, value.length - key.length), paired[key]);
+				});
 			}
-		}
 
-		for (key in paired) {
-			escaped = regEscape(key);
-			html[i] = html[i].replace(new RegExp(escaped + "[^" + escaped + "\`]*" + escaped, "g"), function(value) {
-				return wrap(value.substring(key.length, value.length - key.length), paired[key]);
-			});
-		}
-
-		for (key in special) {
-			html[i] = special[key](html[i]);
+			for (key in special) {
+				html[i] = special[key](html[i]);
+			}
 		}
 
 		if (html[i] == "") {
@@ -111,6 +117,28 @@ outer:
 
 	html[i] += closeAll();
 	return html.join("");
+}
+
+//TODO
+function noEscape(value, pos, line) {
+	prevSpace = line.lastIndexOf(" ", pos);
+	if (prevSpace < 0) {
+		prevSpace = 0;
+	}
+	nextSpace = line.indexOf(" ", pos);
+	if (nextSpace < 0) {
+		nextSpace = line.length;
+	}
+	prevColon = line.lastIndexOf("::", pos);
+	nextSqBrkt = line.indexOf("[", pos);
+
+// no specials
+//(prevColon < 0 && nextSqBrkt < 0) ||
+
+// image::, link:: -- no spaces between :: and current symbol
+// url[description]
+	return (prevColon >= 0 && prevSpace < prevColon) ||
+		(nextSqBrkt >= 0 && nextSpace > nextSqBrkt);
 }
 
 function reachStack(token) {
