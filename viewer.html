@@ -9,7 +9,7 @@
 </head>
 <body onload="list()">
 	<div style="height: 30px">
-			<select id="menu">
+			<select id="menu" onchange="load(event.target.value)">
 				<option>Select an article</option>
 			</select>
 	</div>
@@ -35,8 +35,8 @@
 				docs = JSON.parse(text);
 				for (i in docs) {
 					a = document.createElement("option");
+					a.setAttribute("value", i);
 					a.innerText = docs[i];
-					a.setAttribute("onclick", "load('" + i + "')");
 					document.getElementById("menu").appendChild(a);
 				}
 			});
@@ -50,10 +50,12 @@
 		}
 
 		function show() {
+			localStorage.adoc = input.value;
 			preview.innerHTML = parse(input.value);
 		}
 
 		input.onblur = show;
+		input.value = localStorage.adoc || "";
 	</script>
 </body>
 </html>
