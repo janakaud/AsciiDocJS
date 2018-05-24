@@ -1,5 +1,5 @@
 = Ayubowan!
-==== (The greeting "_May you live long!_" in https://en.m.wikipedia.org/wiki/Sinhalese&#95;language[_Sinhala_])
+==== (The greeting "_May you live long!_" in https://en.m.wikipedia.org/wiki/Sinhalese_language[_Sinhala_])
 
 == Some lorem ipsum stuff
 
@@ -10,7 +10,7 @@ Start a new paragraph with a leading blank line.
 +
 You can use `+` to keep the paragraph sources separate, and yet merge them in the rendered output.
 
-Both link styles work, including <<http://www.example.com,this>> and http://www.example.com[this], always with the "open in new tab" (`target="&#95;blank"`) option.
+Both link styles work, including <<http://www.example.com,this>> and http://www.example.com[this], always with the "open in new tab" (`target="_blank"`) option.
 
 image::not_found.png[You can include images with alt text.]
 
@@ -31,11 +31,9 @@ the tool does not care about the number of characters)
 [NOTE]
 Notes are not working yet (among a *lot* of other AsciiDoc features).
 
-When you have two underscores on the same line, the parser gets messed up :( even in totally unexpected places like image::name_has_underscore.png[image URLs].
+When you have two underscores on the same line, the parser gets messed up :( even in paragraphs, two_underscores can mess things up pretty_bad.
 
-Another case (paragraph) where two_underscores mess things up pretty_bad.
-
-A possible workaround is encoding the&#95;underscore (or whatever the nasty&#95;character), even in an image::http://www.example.com/another&#95;not&#95;found.png[image URL].
+A possible workaround is encoding the&#95;underscore (or whatever the nasty&#95;character).
 
 *That's* _all_, `folks`! (at least for now).
 

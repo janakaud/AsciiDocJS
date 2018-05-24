@@ -24,13 +24,14 @@ paired = {
 };
 special = {
 	image: function(value) {
-		return value.replace(/image::([^\[]+)\[([^,\]]*)(,([^\]]*))?\]/g, wrap(wrap("", "img", "src=\"$1\" alt=\"$2\"$4"), "p", "style=\"text-align: center\""));
+		return value.replace(/image::([^\[]+)\[([^\]]*)\]/g,
+			wrap(wrap("", "img", "src=\"$1\" alt=\"$2\""), "p", "style=\"text-align: center\""));
 	},
 	arrow: function(value) {
-		return value.replace(/->/g, "&rarr;");
+		return safeReplace(value, /->/g, "&rarr;");
 	},
 	mdash: function(value) {
-		return value.replace(/--/g, "&mdash;");
+		return safeReplace(value, /--/g, "&mdash;");
 	},
 	urlType1: function(value) {
 		return value.replace(/<<([^,]+),([^>]+)>>/g, function(whole, url, text) {
@@ -98,8 +99,8 @@ outer:
 
 			for (key in paired) {
 				escaped = regEscape(key);
-				html[i] = html[i].replace(new RegExp(escaped + "[^" + escaped + "\`]+" + escaped, "g"), function(value, pos, line) {
-					return noEscape(value, pos, line) ? value : wrap(value.substring(key.length, value.length - key.length), paired[key]);
+				html[i] = safeReplace(html[i], new RegExp(escaped + "[^" + escaped + "\`\[]+" + escaped, "g"), function(value) {
+					return wrap(value.substring(key.length, value.length - key.length), paired[key]);
 				});
 			}
 
@@ -119,8 +120,10 @@ outer:
 	return html.join("");
 }
 
-//TODO
-function noEscape(value, pos, line) {
+function noEscape(pos, line) {
+	if ((line.substring(0, pos).split("`").length - 1) % 2 != 0) {	//we're inside a code block!
+		return true;
+	}
 	prevSpace = line.lastIndexOf(" ", pos);
 	if (prevSpace < 0) {
 		prevSpace = 0;
@@ -130,6 +133,7 @@ function noEscape(value, pos, line) {
 		nextSpace = line.length;
 	}
 	prevColon = line.lastIndexOf("::", pos);
+	nextDblAnglBrkt = line.indexOf("<<", pos);
 	nextSqBrkt = line.indexOf("[", pos);
 
 // no specials
@@ -138,6 +142,7 @@ function noEscape(value, pos, line) {
 // image::, link:: -- no spaces between :: and current symbol
 // url[description]
 	return (prevColon >= 0 && prevSpace < prevColon) ||
+		(nextDblAnglBrkt >= 0 && nextSpace > nextDblAnglBrkt) ||
 		(nextSqBrkt >= 0 && nextSpace > nextSqBrkt);
 }
 
@@ -207,4 +212,10 @@ function closeTag(tag) {
 
 function getCloseTag(tag) {
 	return "</" + tag + ">";
+}
+
+function safeReplace(line, regex, sub) {
+	return line.replace(regex, function(value, pos, full) {
+		return noEscape(pos, full) ? value : sub instanceof Function ? sub(value) : sub;
+	});
 }
