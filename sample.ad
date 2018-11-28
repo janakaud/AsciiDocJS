@@ -21,7 +21,7 @@ This is a top-level item.
 * top level
 - deep, since we didn't leave a blank line after "top level" to indicate the start of a new list
 --- deeper
--- deeper, although we included 2 dashes (since "--" is a new bullet symbol, and
+-- deeper, although we included 2 dashes (since `--` is a new bullet symbol, and
 the tool does not care about the number of characters)
 ---- this is the _deepest_, but we can go further using more unique bullet tokens!
 * top level again

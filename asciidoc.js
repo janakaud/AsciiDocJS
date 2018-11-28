@@ -98,8 +98,7 @@ outer:
 			}
 
 			for (key in paired) {
-				escaped = regEscape(key);
-				html[i] = safeReplace(html[i], new RegExp(escaped + "[^" + escaped + "\`\[]+" + escaped, "g"), function(value) {
+				html[i] = safeReplace(html[i], pairRegex[key], function(value) {
 					return wrap(value.substring(key.length, value.length - key.length), paired[key]);
 				});
 			}
@@ -107,6 +106,9 @@ outer:
 			for (key in special) {
 				html[i] = special[key](html[i]);
 			}
+		} else if (!done) {
+			// inside a multiline block; not at the start (e.g. <pre> line)
+			html[i] = html[i].replace(/</g, "&lt;");
 		}
 
 		if (html[i] == "") {
@@ -120,8 +122,8 @@ outer:
 	return html.join("");
 }
 
-function noEscape(pos, line) {
-	if ((line.substring(0, pos).split("`").length - 1) % 2 != 0) {	//we're inside a code block!
+function noReplace(pos, line, token) {
+	if ((line.substring(0, pos).split(/`|<\/?code>/).length - 1) % 2 != 0) {	//we're inside a code block!
 		return true;
 	}
 	prevSpace = line.lastIndexOf(" ", pos);
@@ -133,17 +135,21 @@ function noEscape(pos, line) {
 		nextSpace = line.length;
 	}
 	prevColon = line.lastIndexOf("::", pos);
-	nextDblAnglBrkt = line.indexOf("<<", pos);
+	prevDblAnglBrkt = line.lastIndexOf("<<", pos);
 	nextSqBrkt = line.indexOf("[", pos);
+	nextCloseSqBrkt = line.indexOf("]", pos);
 
-// no specials
-//(prevColon < 0 && nextSqBrkt < 0) ||
+	return (
+		// image::http://localhost/test_image_1 (no-replace) vs image::http://localhost/test _image_1
+		(prevColon >= 0 && prevSpace < prevColon) ||
 
-// image::, link:: -- no spaces between :: and current symbol
-// url[description]
-	return (prevColon >= 0 && prevSpace < prevColon) ||
-		(nextDblAnglBrkt >= 0 && nextSpace > nextDblAnglBrkt) ||
-		(nextSqBrkt >= 0 && nextSpace > nextSqBrkt);
+		// <<foo_bar_baz.ad,file foo>> (no-replace) vs <<foo.ad,file _foo_>>
+		(prevDblAnglBrkt >= 0 && prevSpace < prevDblAnglBrkt) ||
+
+		// http://localhost/test_image_1[foo] (no-replace) vs http://localhost/test[_image_1 foo]
+		// but _[foo bar]_ should be replaced
+		(nextSqBrkt >= 0 && nextSpace > nextSqBrkt && nextCloseSqBrkt >= 0 && /[\s\.,;:]/.test(line[nextCloseSqBrkt + 1]))
+	);
 }
 
 function reachStack(token) {
@@ -215,7 +221,17 @@ function getCloseTag(tag) {
 }
 
 function safeReplace(line, regex, sub) {
-	return line.replace(regex, function(value, pos, full) {
-		return noEscape(pos, full) ? value : sub instanceof Function ? sub(value) : sub;
+	return line.replace(regex, function() {
+		var value = arguments[0];
+		var pos = arguments[arguments.length - 2];
+		var full = arguments[arguments.length - 1];
+		return noReplace(pos, full, value) ? value : sub instanceof Function ? sub(value) : sub;
 	});
 }
+
+pairRegex = {};
+Object.entries(paired).forEach(function(entry) {
+	escaped = regEscape(entry[0]);
+	noSqBracRegex = "[^" + escaped + "\\`\\[]+";
+	pairRegex[entry[0]] = new RegExp(escaped + "(" + noSqBracRegex + ")?" + "(\\[" + noSqBracRegex + "\\])*(" + noSqBracRegex + ")?" + escaped, "g");
+});

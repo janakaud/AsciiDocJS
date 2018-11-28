@@ -9,9 +9,10 @@
 </head>
 <body onload="list()">
 	<div style="height: 30px">
-			<select id="menu" onchange="load(event.target.value)">
-				<option>Select an article</option>
-			</select>
+		<select id="menu" onchange="load(event.target.value)">
+			<option>Select an article</option>
+		</select>
+		<button onclick="copy(preview.innerHTML)">Copy HTML</button>
 	</div>
 	<div>
 		<div style="width: 50%; float: left">
